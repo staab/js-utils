@@ -129,6 +129,8 @@ export const createMapOf = R.curry((key, valueKey, collection) =>
 
 export const first = list => list[0]
 
+export const concatAll = (lists = []) => lists.reduce(R.concat, [])
+
 export const intersperseWith = R.curry((fn, coll) =>
   coll.reduce((result, item, idx) =>
     result.length ? result.concat([fn(item, idx), item]) : result.concat(item), []))

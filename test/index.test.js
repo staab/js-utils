@@ -271,6 +271,13 @@ describe('utils/misc', () => {
 
   // Arrays
 
+  describe('concatAll', () => {
+    assert(deepEqual(U.concatAll()), [])
+    assert(deepEqual(U.concatAll([[1, 2]])), [1, 2])
+    assert(deepEqual(U.concatAll([[1, 2], [3, 4]])), [1, 2, 3, 4])
+    assert(deepEqual(U.concatAll([[1, 2], [3, 4], [5, 6]])), [1, 2, 3, 4, 5, 6])
+  })
+
   describe('intersperseWith', () => {
     const value = [1, 2, 'whatever', {}, [], 5]
 
