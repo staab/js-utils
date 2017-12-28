@@ -1,5 +1,10 @@
 /* eslint func-names: 0, no-invalid-this: 0, max-lines: 0, no-undefined: 0 */
-import R from 'ramda'
+import {
+  omit, mapObjIndexed, curry, path as getPath, assocPath, merge, binary, when,
+  always, zipObj, clone, toPairs, find, nth, keys as getKeys, values as getValues,
+  is as ramdaIs, fromPairs, indexBy, sum, pluck, any, map, pipe, split,
+  toLower, join, curryN, uniq, equals, prop, concat, replace,
+} from 'ramda'
 
 // ============================================================================
 // Cardinality
@@ -15,41 +20,41 @@ export const arrPath = path => is('string', path) ? path.split('.') : path
 
 export const dotPath = path => is('array', path) ? path.join('.') : path
 
-export const updatePath = R.curry((path, update, obj) => {
-  const value = R.path(path, obj)
-  const parent = R.path(path.slice(0, -1), obj)
+export const updatePath = curry((path, update, obj) => {
+  const value = getPath(path, obj)
+  const parent = getPath(path.slice(0, -1), obj)
 
   // Provide the value at the path, the value's immediate parent, and the root
   // object as context
   const result = update(value, parent, obj)
 
   // Return the entire object with the path changed
-  return R.assocPath(path, result, obj)
+  return assocPath(path, result, obj)
 })
 
-export const mergePath = R.curry((path, value, obj) =>
-  R.assocPath(path, R.merge(R.path(path, obj), value), obj))
+export const mergePath = curry((path, value, obj) =>
+  assocPath(path, merge(getPath(path, obj), value), obj))
 
 // In's are just shortcut versions of paths
-export const updateIn = R.curry((key, update, obj) =>
-  updatePath([key], R.binary(update), obj))
+export const updateIn = curry((key, update, obj) =>
+  updatePath([key], binary(update), obj))
 
-export const mergeIn = R.curry((key, value, obj) =>
+export const mergeIn = curry((key, value, obj) =>
   mergePath([key], value, obj))
 
-export const copyProp = R.curry((fromKey, toKey, obj) =>
+export const copyProp = curry((fromKey, toKey, obj) =>
   ({...obj, [toKey]: obj[fromKey]}))
 
-export const moveProp = R.curry((fromKey, toKey, obj) =>
-  R.omit([fromKey], copyProp(fromKey, toKey, obj)))
+export const moveProp = curry((fromKey, toKey, obj) =>
+  omit([fromKey], copyProp(fromKey, toKey, obj)))
 
-export const replaceValues = R.curry((matchFn, toValue, obj) =>
-  R.mapObjIndexed(R.when(matchFn, R.always(toValue)), obj))
+export const replaceValues = curry((matchFn, toValue, obj) =>
+  mapObjIndexed(when(matchFn, always(toValue)), obj))
 
-export const fillKeys = R.curry((keys, value) =>
-  R.zipObj(keys, keys.map(() => R.clone(value))))
+export const fillKeys = curry((keys, value) =>
+  zipObj(keys, keys.map(() => clone(value))))
 
-export const assocPathMutable = R.curry((path, value, obj) => {
+export const assocPathMutable = curry((path, value, obj) => {
   const rootObj = obj
 
   while (path.length > 1) {
@@ -66,23 +71,23 @@ export const assocPathMutable = R.curry((path, value, obj) => {
 // ============================================================================
 // Objects
 
-export const mergeRight = R.curry((left, right) => ({...right, ...left}))
+export const mergeRight = curry((left, right) => ({...right, ...left}))
 
-export const forEachObj = (fn, obj) => R.toPairs(obj).forEach(([key, value]) => fn(value, key))
+export const forEachObj = (fn, obj) => toPairs(obj).forEach(([key, value]) => fn(value, key))
 
-export const findObjPair = (fn, obj) => R.find(([key, value]) => fn(value, key), R.toPairs(obj))
+export const findObjPair = (fn, obj) => find(([key, value]) => fn(value, key), toPairs(obj))
 
-export const findObj = (fn, obj) => R.nth(1, findObjPair(fn, obj) || [])
+export const findObj = (fn, obj) => nth(1, findObjPair(fn, obj) || [])
 
-export const findObjIndex = R.curry((fn, obj) => R.nth(0, findObjPair(fn, obj) || []))
+export const findObjIndex = curry((fn, obj) => nth(0, findObjPair(fn, obj) || []))
 
-export const count = obj => R.keys(obj).length
+export const count = obj => getKeys(obj).length
 
-export const modifyKeys = R.curry((fn, obj) =>
-  R.zipObj(R.keys(obj).map(fn), R.values(obj)))
+export const modifyKeys = curry((fn, obj) =>
+  zipObj(getKeys(obj).map(fn), getValues(obj)))
 
-export const modifyKeysRecursive = R.curry((fn, value) => {
-  if (R.is(Array, value)) {
+export const modifyKeysRecursive = curry((fn, value) => {
+  if (ramdaIs(Array, value)) {
     return value.map(modifyKeysRecursive(fn))
   }
 
@@ -91,51 +96,51 @@ export const modifyKeysRecursive = R.curry((fn, value) => {
     return value
   }
 
-  return R.zipObj(
-    R.keys(value).map(fn),
-    R.values(value).map(modifyKeysRecursive(fn)))
+  return zipObj(
+    getKeys(value).map(fn),
+    getValues(value).map(modifyKeysRecursive(fn)))
 })
 
-export const isObject = value => R.is(Object, value) && !R.is(Array, value)
+export const isObject = value => ramdaIs(Object, value) && !ramdaIs(Array, value)
 
 export const mapObjPairs = (fn, obj) =>
-  R.fromPairs(R.toPairs(obj).map(fn))
+  fromPairs(toPairs(obj).map(fn))
 
 // Gotta curry this kinda manually since keys/args might have 0 length
 export const argsToObj = (keys, ...args) => {
   if (args.length) {
-    return R.fromPairs(keys.map((key, idx) => [key, args[idx]]))
+    return fromPairs(keys.map((key, idx) => [key, args[idx]]))
   }
 
-  return (...moreArgs) => R.fromPairs(keys.map((key, idx) => [key, moreArgs[idx]]))
+  return (...moreArgs) => fromPairs(keys.map((key, idx) => [key, moreArgs[idx]]))
 }
 
-export const objToArgs = R.curry((keys, obj) => keys.map(key => obj[key]))
+export const objToArgs = curry((keys, obj) => keys.map(key => obj[key]))
 
-export const incrementProp = (prop, incr = 1) => value =>
-  ({...value, [prop]: value[prop] + incr})
+export const incrementProp = (key, incr = 1) => value =>
+  ({...value, [key]: value[key] + incr})
 
-export const renameProp = R.curry((fromName, toName, obj) =>
-  ({...R.omit([fromName], obj), [toName]: obj[fromName]}))
+export const renameProp = curry((fromName, toName, obj) =>
+  ({...omit([fromName], obj), [toName]: obj[fromName]}))
 
-export const createMap = R.curry((key, collection) =>
-  R.indexBy(R.prop(key), collection || []))
+export const createMap = curry((key, collection) =>
+  indexBy(prop(key), collection || []))
 
-export const createMapOf = R.curry((key, valueKey, collection) =>
-  R.fromPairs((collection || []).map(item => [item[key], item[valueKey]])))
+export const createMapOf = curry((key, valueKey, collection) =>
+  fromPairs((collection || []).map(item => [item[key], item[valueKey]])))
 
 // ============================================================================
 // Arrays
 
 export const first = list => list[0]
 
-export const concatAll = (lists = []) => lists.reduce(R.concat, [])
+export const concatAll = (lists = []) => lists.reduce(concat, [])
 
-export const intersperseWith = R.curry((fn, coll) =>
+export const intersperseWith = curry((fn, coll) =>
   coll.reduce((result, item, idx) =>
     result.length ? result.concat([fn(item, idx), item]) : result.concat(item), []))
 
-export const chunk = R.curry((chunkLength, coll) => {
+export const chunk = curry((chunkLength, coll) => {
   const result = []
   let current = []
 
@@ -169,13 +174,13 @@ export const invert = nestedArray => {
   return result
 }
 
-export const sumProp = R.curry((prop, coll) => R.sum(R.pluck(prop, coll)))
+export const sumProp = curry((key, coll) => sum(pluck(key, coll)))
 
 
 // ============================================================================
 // Types
 
-export const is = R.curry((type, value) => {
+export const is = curry((type, value) => {
   // typeof [] === 'object'
   if (isInstance(Array, value)) {
     return type === 'array'
@@ -189,28 +194,28 @@ export const is = R.curry((type, value) => {
   return typeof value === type
 })
 
-export const isInstance = R.curry((types, value) =>
-  R.any(type => typeof value === 'object' && value instanceof type, ensurePlural(types)))
+export const isInstance = curry((types, value) =>
+  any(type => typeof value === 'object' && value instanceof type, ensurePlural(types)))
 
 export const isUuid = value =>
   value.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
 
-export const initArray = (length, initItem) => R.map(initItem, new Array(length))
+export const initArray = (length, initItem) => map(initItem, new Array(length))
 
 // ============================================================================
 // Strings
 
 export const ucFirst = value => value.slice(0, 1).toUpperCase() + value.slice(1)
 
-export const snakeToHuman = R.pipe(R.toLower, R.split('_'), R.map(ucFirst), R.join(' '))
+export const snakeToHuman = pipe(toLower, split('_'), map(ucFirst), join(' '))
 
 export const snakeToCamel = value =>
   value.split('_').map((sub, idx) =>
     idx === 0 ? sub : ucFirst(sub.toLowerCase())).join('')
 
-export const camelToSnake = R.replace(/([A-Z])/g, match => `_${match.toLowerCase()}`)
+export const camelToSnake = replace(/([A-Z])/g, match => `_${match.toLowerCase()}`)
 
-export const camelToHuman = R.pipe(camelToSnake, snakeToHuman)
+export const camelToHuman = pipe(camelToSnake, snakeToHuman)
 
 export const humanToKebab = value => value.replace(' ', '-').toLowerCase()
 
@@ -245,7 +250,7 @@ export const formatNumericPercent = (num, denom = 100, precision = 1) =>
 export const parseNumericPercent = (display, denom = 100, precision = 1) =>
   round(precision, parseFloatString(display) / (100 / denom))
 
-export const formatPercent = R.pipe(formatNumericPercent, value => `${value}%`)
+export const formatPercent = pipe(formatNumericPercent, value => `${value}%`)
 
 export const parsePercent = (value, ...args) =>
   parseNumericPercent(value.replace('%', ''), ...args)
@@ -277,7 +282,7 @@ export const safeDivide = (a, b, precision = 0) =>
 // ============================================================================
 // Promises
 
-export const resolveAfter = R.curry((duration, value) =>
+export const resolveAfter = curry((duration, value) =>
   new Promise(resolve => setTimeout(() => resolve(value), duration)))
 
 export const resolveWith = fn => (...args) => Promise.resolve(fn(...args))
@@ -312,7 +317,7 @@ export const definePrefixedEnum = (prefix, values) => {
 // inspired by clojure's thread macro
 export const wrap = value => ({
   then: fn => wrap(fn(value)),
-  unwrap: R.always(value),
+  unwrap: always(value),
 })
 
 export const parseJsonSafe = value => {
@@ -331,7 +336,7 @@ export const enforce = (condition, message) => {
   return condition
 }
 
-export const noop = R.always(undefined)
+export const noop = always(undefined)
 
 export const notImplemented = message => () => {
   throw new Error(message)
@@ -381,7 +386,7 @@ export const throttle = (threshhold, fn, scope = {}) =>
 
 
 export const cached = (obj, path, getNewValue) => {
-  let value = R.path(path, obj)
+  let value = getPath(path, obj)
 
   if (value === undefined) {
     value = getNewValue()
@@ -392,7 +397,7 @@ export const cached = (obj, path, getNewValue) => {
   return value
 }
 
-export const clog = R.curryN(2, function clog(info, value) {
+export const clog = curryN(2, function clog(info, value) {
   /* eslint no-console: 0*/
   enforce(arguments.length === 2, 'Both info and value should be provided to clog')
 
@@ -404,7 +409,7 @@ export const clog = R.curryN(2, function clog(info, value) {
 export const diffObjs = (obj1, obj2) => {
   const diff = []
 
-  R.uniq(R.keys(obj1).concat(R.keys(obj2))).forEach(key => {
+  uniq(getKeys(obj1).concat(getKeys(obj2))).forEach(key => {
     if (obj1[key] === undefined && obj2[key] !== undefined) {
       diff.push([`key "${key}" is new in object 2. New value:`, obj2[key]])
     }
@@ -413,7 +418,7 @@ export const diffObjs = (obj1, obj2) => {
       diff.push([`key "${key}" was removed in object 2. Old value:`, obj1[key]])
     }
 
-    if (!R.equals(obj1[key], obj2[key])) {
+    if (!equals(obj1[key], obj2[key])) {
       diff.push([
         `key "${key}" was changed in object 2. Old value: `,
         obj1[key],
