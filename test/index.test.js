@@ -156,6 +156,12 @@ describe('utils/misc', () => {
     })
   })
 
+  describe('pickValues', () => {
+    it('should return the selected values in the given order', () => {
+      assert.deepEqual(U.pickValues(['a', 'c'], {a: 1, b: 2, c: 3}), [1, 3])
+    })
+  })
+
   describe('count', () => {
     it('should return the correct length of an object', () => {
       assert.equal(U.count({a: 1, b: 2}), 2)

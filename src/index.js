@@ -81,6 +81,8 @@ export const findObj = (fn, obj) => nth(1, findObjPair(fn, obj) || [])
 
 export const findObjIndex = curry((fn, obj) => nth(0, findObjPair(fn, obj) || []))
 
+export const pickValues = curry((keys, obj) => keys.map(key => obj[key]))
+
 export const count = obj => getKeys(obj).length
 
 export const modifyKeys = curry((fn, obj) =>
@@ -133,6 +135,8 @@ export const createMapOf = curry((key, valueKey, collection) =>
 // Arrays
 
 export const first = list => list[0]
+
+export const enumerate = list => list.map((item, idx) => [item, idx])
 
 export const concatAll = (lists = []) => lists.reduce(concat, [])
 
@@ -224,6 +228,9 @@ export const pluralize = (value, label, pluralLabel) =>
 
 export const quantify = (value, label, pluralLabel) =>
   `${value} ${pluralize(value, label, pluralLabel)}`
+
+export const randomId = () => Math.random().toString().slice(2)
+
 
 // ============================================================================
 // Currency
@@ -338,6 +345,8 @@ export const enforce = (condition, message) => {
 
 export const noop = always(undefined)
 
+export const apply = (fn, args) => fn(...args)
+
 export const notImplemented = message => () => {
   throw new Error(message)
 }
@@ -346,6 +355,12 @@ export const randInt = () => Math.ceil(Math.random() * 9)
 
 export const barcode = () =>
   initArray(12, randInt).join('')
+
+export const swatch = (value, defaultResult, cases) => {
+  const result = cases[value]
+
+  return result === undefined ? defaultResult : result
+}
 
 export const withSelf = fn => function (...args) {
   return fn(this, ...args)
