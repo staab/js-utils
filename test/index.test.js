@@ -410,6 +410,12 @@ describe('utils/misc', () => {
     })
   })
 
+  describe('humanToKebab', () => {
+    it('should convert a string with multiple spaces', () => {
+      assert.equal(U.humanToKebab('Stuff And Things'), 'stuff-and-things')
+    })
+  })
+
   // Currency
 
   describe('formatNumericCurrency', () => {

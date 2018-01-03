@@ -1,6 +1,6 @@
 {
   "name": "js-utils",
-  "version": "0.1.2",
+  "version": "0.2.2",
   "private": false,
   "description": "Create svgs for use as label templates",
   "main": "lib/js-utils.js",

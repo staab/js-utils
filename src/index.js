@@ -221,7 +221,7 @@ export const camelToSnake = replace(/([A-Z])/g, match => `_${match.toLowerCase()
 
 export const camelToHuman = pipe(camelToSnake, snakeToHuman)
 
-export const humanToKebab = value => value.replace(' ', '-').toLowerCase()
+export const humanToKebab = value => value.replace(/ /g, '-').toLowerCase()
 
 export const pluralize = (value, label, pluralLabel) =>
   value === 1 ? label : (pluralLabel || `${label}s`)
