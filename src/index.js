@@ -251,11 +251,25 @@ export const parseCurrency = display => parseNumericCurrency(display.replace('$'
 
 const removeExtraZeroes = num => String(parseFloat(num))
 
-export const formatNumericPercent = (num, denom = 100, precision = 1) =>
-  removeExtraZeroes((num / denom * 100).toFixed(precision))
+export const formatNumericPercent = (num, {denom = 100, precision} = {}) => {
+  let result = num / denom * 100
 
-export const parseNumericPercent = (display, denom = 100, precision = 1) =>
-  round(precision, parseFloatString(display) / (100 / denom))
+  if (precision !== undefined) {
+    result = result.toFixed(precision)
+  }
+
+  return removeExtraZeroes(result)
+}
+
+export const parseNumericPercent = (display, {denom = 100, precision} = {}) => {
+  let result = parseFloatString(display) / (100 / denom)
+
+  if (precision !== undefined) {
+    result = round(precision, result)
+  }
+
+  return result
+}
 
 export const formatPercent = pipe(formatNumericPercent, value => `${value}%`)
 

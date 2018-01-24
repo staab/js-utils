@@ -462,21 +462,31 @@ describe('utils/misc', () => {
     it('formats various things', () => {
       assert.equal(U.formatNumericPercent(1), '1')
       assert.equal(U.formatNumericPercent(20), '20')
-      assert.equal(U.formatNumericPercent(1.01), '1')
-      assert.equal(U.formatNumericPercent(2934.86), '2934.9')
+      assert.equal(U.formatNumericPercent(1.01), '1.01')
+      assert.equal(U.formatNumericPercent(2934.86), '2934.86')
       assert.equal(U.formatNumericPercent(-24), '-24')
     })
 
     it('takes a denominator', () => {
-      assert.equal(U.formatNumericPercent(30, 300), '10')
+      assert.equal(U.formatNumericPercent(30, {denom: 300}), '10')
     })
 
     it('takes a precision', () => {
-      assert.equal(U.formatNumericPercent(10, 300, 5), '3.33333')
+      assert.equal(
+        U.formatNumericPercent(10, {denom: 300, precision: 1}),
+        '3.3'
+      )
+      assert.equal(
+        U.formatNumericPercent(10, {denom: 300, precision: 5}),
+        '3.33333'
+      )
     })
 
     it('trims extra zeroes', () => {
-      assert.equal(U.formatNumericPercent(30, 300, 5), '10')
+      assert.equal(
+        U.formatNumericPercent(30, {denom: 300, precision: 5}),
+        '10'
+      )
     })
   })
 
@@ -485,16 +495,20 @@ describe('utils/misc', () => {
       assert.equal(U.parseNumericPercent('1'), 1)
       assert.equal(U.parseNumericPercent('20'), 20)
       assert.equal(U.parseNumericPercent('1'), 1)
-      assert.equal(U.parseNumericPercent('2934.9'), 2934.9)
+      assert.equal(U.parseNumericPercent('2934.89'), 2934.89)
       assert.equal(U.parseNumericPercent('-24'), -24)
     })
 
     it('takes a denominator', () => {
-      assert.equal(U.parseNumericPercent('10', 300), 30)
+      assert.equal(U.parseNumericPercent('10', {denom: 300}), 30)
     })
 
     it('takes a precision', () => {
-      assert.equal(U.parseNumericPercent('3.222222', 300, 3), 9.667)
+      assert.equal(U.parseNumericPercent('2934.89', {precision: 1}), 2934.9)
+      assert.equal(
+        U.parseNumericPercent('3.222222', {denom: 300, precision: 3}),
+        9.667
+      )
     })
   })
 
@@ -502,21 +516,21 @@ describe('utils/misc', () => {
     it('formats various things', () => {
       assert.equal(U.formatPercent(1), '1%')
       assert.equal(U.formatPercent(20), '20%')
-      assert.equal(U.formatPercent(1.01), '1%')
-      assert.equal(U.formatPercent(2934.86), '2934.9%')
+      assert.equal(U.formatPercent(1.01), '1.01%')
+      assert.equal(U.formatPercent(2934.86), '2934.86%')
       assert.equal(U.formatPercent(-24), '-24%')
     })
 
     it('takes a denominator', () => {
-      assert.equal(U.formatPercent(30, 300), '10%')
+      assert.equal(U.formatPercent(30, {denom: 300}), '10%')
     })
 
     it('takes a precision', () => {
-      assert.equal(U.formatPercent(10, 300, 5), '3.33333%')
+      assert.equal(U.formatPercent(10, {denom: 300, precision: 5}), '3.33333%')
     })
 
     it('trims extra zeroes', () => {
-      assert.equal(U.formatPercent(30, 300, 5), '10%')
+      assert.equal(U.formatPercent(30, {denom: 300, precision: 5}), '10%')
     })
   })
 
@@ -530,11 +544,11 @@ describe('utils/misc', () => {
     })
 
     it('takes a denominator', () => {
-      assert.equal(U.parsePercent('10%', 300), 30)
+      assert.equal(U.parsePercent('10%', {denom: 300}), 30)
     })
 
     it('takes a precision', () => {
-      assert.equal(U.parsePercent('3.222222%', 300, 3), 9.667)
+      assert.equal(U.parsePercent('3.222222%', {denom: 300, precision: 3}), 9.667)
     })
   })
 
