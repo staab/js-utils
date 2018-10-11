@@ -657,4 +657,26 @@ describe('utils/misc', () => {
       setTimeout(done, 20)
     })
   })
+
+  describe('throttle', () => {
+    it('should resolve with the same value for all listeners', done => {
+      const loader = x => x
+      const throttledLoader = U.throttle(5, loader)
+
+      throttledLoader(1).then(result => assert.equal(result, 2))
+      throttledLoader(2).then(result => assert.equal(result, 2))
+
+      setTimeout(done, 10)
+    })
+
+    it('should cancel stale listeners', done => {
+      const loader = x => x
+      const throttledLoader = U.throttle(5, loader, {cancelStale: true})
+
+      throttledLoader(1).then(() => done('Failed to cancel'))
+      throttledLoader(2).then(result => assert.equal(result, 2))
+
+      setTimeout(done, 10)
+    })
+  })
 })

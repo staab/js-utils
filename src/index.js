@@ -386,14 +386,12 @@ export const throttle = (threshhold, fn, scope = {}) =>
 
    (...args) => {
     // If there's a timeout, that means there was a previous call. Cancel it.
-    if (scope.timeout) {
-      clearTimeout(scope.timeout)
-    }
+    clearTimeout(scope.timeout)
 
     // If there isn't a resolution function, that means any old calls completed
     // _resolve and _promise are shared by all throttled callers so everyone
     // gets the most recent value
-    if (!scope.resolve) {
+    if (!scope.resolve || scope.cancelStale) {
       scope.promise = new Promise(resolve => {
         scope.resolve = resolve
       })
