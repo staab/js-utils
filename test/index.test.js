@@ -597,16 +597,6 @@ describe('utils/misc', () => {
     })
   })
 
-  describe('clamp', () => {
-    it('handles min and max', () => {
-      assert.equal(-30, U.clamp(-30, 0, -60))
-      assert.equal(-30, U.clamp(-60, -30, 100))
-      assert.equal(10, U.clamp(10, 20, 0))
-      assert.equal(20, U.clamp(10, 20, 100))
-      assert.equal(20, U.clamp(10, 30, 20))
-    })
-  })
-
   describe('wrap', () => {
     it('passes transforms in order and can be unwrapped', () => {
       const value = U.wrap(1)

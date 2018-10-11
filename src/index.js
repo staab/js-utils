@@ -304,8 +304,6 @@ export const round = (precision, value) =>
 export const safeDivide = (a, b, precision = 0) =>
   b === 0 ? 0 : round(precision, a / b)
 
-export const clamp = (min, max, value) => Math.max(min, Math.min(max, value))
-
 // ============================================================================
 // Promises
 
