@@ -1,7 +1,7 @@
 /* eslint no-new-wrappers: 0, max-lines: 0, max-statements: 0, no-undefined: 0 */
 
 import {assert} from 'chai'
-import {equals, keys, always, intersperse} from 'ramda'
+import {equals, add, multiply, keys, always, intersperse} from 'ramda'
 import * as U from 'js-utils'
 
 describe('utils/misc', () => {
@@ -384,6 +384,12 @@ describe('utils/misc', () => {
     })
   })
 
+  describe('fillArray', () => {
+    it('should populate array with given length using given value', () => {
+      assert.deepEqual(U.fillArray(3, 1), [1, 1, 1])
+    })
+  })
+
   // Strings
 
   describe('ucFirst', () => {
@@ -395,6 +401,12 @@ describe('utils/misc', () => {
   describe('snakeToHuman', () => {
     it('should convert a basic string', () => {
       assert.equal(U.snakeToHuman('stuff_and_things'), 'Stuff And Things')
+    })
+  })
+
+  describe('humanToSnake', () => {
+    it('should convert a basic string', () => {
+      assert.equal(U.humanToSnake('Stuff And Things'), 'stuff_and_things')
     })
   })
 
@@ -585,6 +597,16 @@ describe('utils/misc', () => {
     })
   })
 
+  describe('clamp', () => {
+    it('handles min and max', () => {
+      assert.equal(-30, U.clamp(-30, 0, -60))
+      assert.equal(-30, U.clamp(-60, -30, 100))
+      assert.equal(10, U.clamp(10, 20, 0))
+      assert.equal(20, U.clamp(10, 20, 100))
+      assert.equal(20, U.clamp(10, 30, 20))
+    })
+  })
+
   describe('wrap', () => {
     it('passes transforms in order and can be unwrapped', () => {
       const value = U.wrap(1)
@@ -593,6 +615,25 @@ describe('utils/misc', () => {
         .unwrap()
 
       assert.equal(value, 6)
+    })
+  })
+
+  describe('doPipe', () => {
+    it('calls functions in order and returns result', () => {
+      assert.equal(9, U.doPipe(1, [add(2), multiply(3)]))
+    })
+  })
+
+  describe('tap', () => {
+    it('calls function and returns value', () => {
+      let called = false
+
+      const fn = U.tap(() => {
+        called = true
+      })
+
+      assert.equal(1, fn(1))
+      assert.isTrue(called)
     })
   })
 
@@ -655,6 +696,27 @@ describe('utils/misc', () => {
 
       // We're done
       setTimeout(done, 20)
+    })
+  })
+
+  describe('waitFor', () => {
+    it('should resolve when the condition changes', done => {
+      let condition = false
+      let success = false
+
+      U.waitFor(() => condition, 5).then(() => {
+        success = true
+      })
+
+      setTimeout(() => {
+        condition = true
+      }, 10)
+
+      setTimeout(() => {
+        assert.isTrue(success)
+
+        done()
+      }, 15)
     })
   })
 

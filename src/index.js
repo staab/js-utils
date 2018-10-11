@@ -204,7 +204,9 @@ export const isInstance = curry((types, value) =>
 export const isUuid = value =>
   value.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
 
-export const initArray = (length, initItem) => map(initItem, new Array(length))
+export const initArray = (length, init) => map(init, new Array(length))
+
+export const fillArray = (length, item) => map(always(item), new Array(length))
 
 // ============================================================================
 // Strings
@@ -212,6 +214,8 @@ export const initArray = (length, initItem) => map(initItem, new Array(length))
 export const ucFirst = value => value.slice(0, 1).toUpperCase() + value.slice(1)
 
 export const snakeToHuman = pipe(toLower, split('_'), map(ucFirst), join(' '))
+
+export const humanToSnake = value => value.replace(/ /g, '_').toLowerCase()
 
 export const snakeToCamel = value =>
   value.split('_').map((sub, idx) =>
@@ -300,6 +304,8 @@ export const round = (precision, value) =>
 export const safeDivide = (a, b, precision = 0) =>
   b === 0 ? 0 : round(precision, a / b)
 
+export const clamp = (min, max, value) => Math.max(min, Math.min(max, value))
+
 // ============================================================================
 // Promises
 
@@ -313,6 +319,53 @@ export const rejectWith = fn => (...args) => Promise.reject(fn(...args))
 export const noopPromise = {then: () => noopPromise, catch: () => noopPromise}
 
 export const haltPromiseChain = promise => promise.catch(noop) || noopPromise
+
+export const waitFor = (condition, timeout = 100) => new Promise(resolve => {
+  (function tryIt() {
+    const result = condition()
+
+    if (result) {
+      resolve(result)
+    } else {
+      setTimeout(tryIt, timeout)
+    }
+  }())
+})
+
+export const throttle = (threshhold, fn, scope = {}) =>
+  // Scope can be passed in so we can throttle multiple functions
+  // with the same promise
+
+   (...args) => {
+    // If there's a timeout, that means there was a previous call. Cancel it.
+    clearTimeout(scope.timeout)
+
+    // If there isn't a resolution function, that means any old calls completed
+    // _resolve and _promise are shared by all throttled callers so everyone
+    // gets the most recent value
+    if (!scope.resolve || scope.cancelStale) {
+      if (scope.promise) {
+        scope.promise.catch(noop)
+      }
+
+      scope.promise = new Promise(resolve => {
+        scope.resolve = resolve
+      })
+    }
+
+    // Wait until inputs slow down to call the function
+    scope.timeout = setTimeout(() => {
+      // Now call the function and resolve with the return value
+      scope.resolve(fn(...args))
+
+      // Clear out the resolve function, which indicates there are callers
+      // waiting on the most recent result
+      scope.resolve = null
+      scope.timeout = null
+    }, threshhold)
+
+    return scope.promise
+  }
 
 // ============================================================================
 // Really misc
@@ -341,6 +394,13 @@ export const wrap = value => ({
   unwrap: always(value),
 })
 
+// Re implement tap to not be auto-curried like in ramda
+export const tap = fn => value => {
+  fn(value)
+
+  return value
+}
+
 export const parseJsonSafe = value => {
   try {
     return JSON.parse(value)
@@ -361,6 +421,8 @@ export const noop = always(undefined)
 
 export const apply = (fn, args) => fn(...args)
 
+export const doPipe = (value, fns) => fns.reduce((v, fn) => fn(v), value)
+
 export const notImplemented = message => () => {
   throw new Error(message)
 }
@@ -379,38 +441,6 @@ export const swatch = (value, defaultResult, cases) => {
 export const withSelf = fn => function (...args) {
   return fn(this, ...args)
 }
-
-export const throttle = (threshhold, fn, scope = {}) =>
-  // Scope can be passed in so we can throttle multiple functions
-  // with the same promise
-
-   (...args) => {
-    // If there's a timeout, that means there was a previous call. Cancel it.
-    clearTimeout(scope.timeout)
-
-    // If there isn't a resolution function, that means any old calls completed
-    // _resolve and _promise are shared by all throttled callers so everyone
-    // gets the most recent value
-    if (!scope.resolve || scope.cancelStale) {
-      scope.promise = new Promise(resolve => {
-        scope.resolve = resolve
-      })
-    }
-
-    // Wait until inputs slow down to call the function
-    scope.timeout = setTimeout(() => {
-      // Now call the function and resolve with the return value
-      scope.resolve(fn(...args))
-
-      // Clear out the resolve function, which indicates there are callers
-      // waiting on the most recent result
-      scope.resolve = null
-      scope.timeout = null
-    }, threshhold)
-
-    return scope.promise
-  }
-
 
 export const cached = (obj, path, getNewValue) => {
   let value = getPath(path, obj)
