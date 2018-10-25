@@ -327,6 +327,18 @@ describe('utils/misc', () => {
     })
   })
 
+  describe('sumProp', () => {
+    it('should sum prop properly', () => {
+      assert.deepEqual(U.sumProp('x', [{x: 1}, {x: 5}, {x: -3}]), 3)
+    })
+  })
+
+  describe('splice', () => {
+    it('should splice properly', () => {
+      assert.deepEqual(U.splice(2, 2, [1, 2, 3, 4, 5]), [1, 2, 5])
+    })
+  })
+
   // Types
 
   describe('is', () => {

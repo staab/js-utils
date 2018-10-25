@@ -180,6 +180,7 @@ export const invert = nestedArray => {
 
 export const sumProp = curry((key, coll) => sum(pluck(key, coll)))
 
+export const splice = curry((idx, n, v) => v.slice(0, idx).concat(v.slice(idx + n)))
 
 // ============================================================================
 // Types
